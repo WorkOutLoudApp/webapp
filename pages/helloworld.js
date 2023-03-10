@@ -44,7 +44,7 @@ export default function Home() {
   
         <main className={styles.main}>
           <h1 className={styles.title}>
-            Response from workoutloud.me/api/v1/helloworld
+            Response from workoutloud.me/api/v1/example/hello
           </h1>
   
           <p className={styles.description}>
