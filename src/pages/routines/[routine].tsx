@@ -18,8 +18,9 @@ import { useSpeechActions } from '@src/context/SpeechAction'
 const headerTabs = ['Exercises', 'History', 'Settings']
 interface RoutinePageProps {
   routine: string
+  owner: string
 }
-const RoutinePage = ({ routine }: RoutinePageProps) => {
+const RoutinePage = ({ routine, owner }: RoutinePageProps) => {
   const { auth, token } = useAuth()
   const [currentTab, setCurrentTab] = useState(headerTabs[0])
   const [exerciseModalOpen, setExerciseModalOpen] = useState(false)
@@ -34,36 +35,48 @@ const RoutinePage = ({ routine }: RoutinePageProps) => {
 
   const currentExerciseIndex = speech.currentExerciseIndex
   const [currentSpokenText, setCurrentSpokenText] = useState('')
-  const [isFavorite, setIsFavorite] = useState(false);
-  
-  let currentRoutine : any = null
-  let currentExercises : any = null
+  const [isFavorite, setIsFavorite] = useState(false)
+
+  let currentRoutine: any = null
+  let currentExercises: any = null
 
   const toggleFavorite = () => {
-    setIsFavorite(!isFavorite);
-  };
-  
+    setIsFavorite(!isFavorite)
+  }
 
+  useEffect(() => {
+    setSpeech({...speech, exercises: exercises})
+  }
+  ,[exercises])
 
   const currentExercise =
     exercises.length > 0
       ? exercises[currentExerciseIndex]
       : { image: null, name: '', routineName: '' }
 
+  const [userId, setUserId] = useState('')
+  const [isOwner, setIsOwner] = useState(false)
   if (typeof window !== 'undefined') {
     useEffect(() => {
       if (!token) return
       handleStop()
       axios
-        .get(`http://localhost:4000/v1/routine/${routine}/get`, {
+        .get(`${process.env.NEXT_PUBLIC_API_URL}/v1/routine/${routine}/get`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
+          params: {
+            ...(owner && { owner }),
+          },
         })
         .then((res) => {
-          setData(res.data)
+          if (!owner) {
+            setIsOwner(true)
+          }
+          setUserId(res.data.userId)
+          setData(res.data.routine)
           getExercises()
-          currentRoutine = res.data
+          currentRoutine = res.data.routine
         })
         .catch((err) => {
           console.log(err)
@@ -73,7 +86,7 @@ const RoutinePage = ({ routine }: RoutinePageProps) => {
 
   const getExercises = () => {
     axios
-      .get(`http://localhost:4000/v1/routine/${routine}/getExercises`, {
+      .get(`${process.env.NEXT_PUBLIC_API_URL}/v1/routine/${routine}/getExercises`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -91,7 +104,12 @@ const RoutinePage = ({ routine }: RoutinePageProps) => {
   }
 
   const updateSpeech = (routine: any, exercises: any) => {
-    setSpeech({...speech, routineName: routine.name, exercises: exercises, currentExerciseIndex: 0})
+    setSpeech({
+      ...speech,
+      routineName: routine.name,
+      exercises: exercises,
+      currentExerciseIndex: 0,
+    })
   }
 
   const onAddExercise = async (exercise: IExercise) => {
@@ -99,11 +117,12 @@ const RoutinePage = ({ routine }: RoutinePageProps) => {
       ...exercise,
       sets: parseInt(exercise.sets, 10),
       reps: parseInt(exercise.reps, 10),
+      rest: parseInt(exercise.rest, 10),
     }
     setExerciseModalOpen(false)
     axios
       .post(
-        `http://localhost:4000/v1/routine/${routine}/addExercise`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/routine/${routine}/addExercise`,
         formattedExercise,
         {
           headers: {
@@ -124,10 +143,11 @@ const RoutinePage = ({ routine }: RoutinePageProps) => {
       ...exercise,
       sets: parseInt(exercise.sets, 10),
       reps: parseInt(exercise.reps, 10),
+      rest: parseInt(exercise.rest, 10),
     }
     axios
       .post(
-        `http://localhost:4000/v1/routine/${formattedExercise}/editExercise`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/routine/${formattedExercise}/editExercise`,
         formattedExercise,
         {
           headers: {
@@ -146,7 +166,7 @@ const RoutinePage = ({ routine }: RoutinePageProps) => {
   const onFavorite = async () => {
     axios
       .patch(
-        `http://localhost:4000/v1/routine/${routine}/favorite`,
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/routine/${routine}/favorite`,
         {},
         {
           headers: {
@@ -156,7 +176,7 @@ const RoutinePage = ({ routine }: RoutinePageProps) => {
       )
       .then((res) => {
         setData(res.data)
-        setIsFavorite(res.data.isFavorite);
+        setIsFavorite(res.data.isFavorite)
       })
       .catch((err) => {
         console.log(err)
@@ -165,7 +185,7 @@ const RoutinePage = ({ routine }: RoutinePageProps) => {
 
   const onDelete = async (id: number) => {
     axios
-      .get(`http://localhost:4000/v1/routine/${id}/deleteExercise`, {
+      .get(`${process.env.NEXT_PUBLIC_API_URL}/v1/routine/${id}/deleteExercise`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -191,6 +211,8 @@ const RoutinePage = ({ routine }: RoutinePageProps) => {
               currentTab={currentTab}
               setTab={setCurrentTab}
               onFavorite={onFavorite}
+              userId={userId}
+              isOwner={isOwner}
             />
           ) : null}
           {currentTab === 'Exercises' ? (
@@ -217,9 +239,8 @@ const RoutinePage = ({ routine }: RoutinePageProps) => {
                 <FontAwesomeIcon icon={faSearch} className="fa-md" /> Search
                 Exercises
               </button>
-              <div>{JSON.stringify(exercises)}</div>
               <div className="grid grid-cols-2 gap-3">
-                {exercises.map((exercise: any) => (
+                {exercises.map((exercise: any, index) => (
                   <Exercise
                     key={exercise.id}
                     {...exercise}
@@ -230,6 +251,8 @@ const RoutinePage = ({ routine }: RoutinePageProps) => {
                         ...updatedExercise,
                       })
                     }
+                    isOwner={isOwner}
+                    exerciseIndex= {index}
                   />
                 ))}
               </div>
@@ -243,7 +266,7 @@ const RoutinePage = ({ routine }: RoutinePageProps) => {
         imageUrl={currentExercise?.image}
         routineName={data ? data.name : ''}
         exercises={exercises}
-        isFavorite={isFavorite}
+        isFavorite={data?.isFavorite}
         onFavorite={onFavorite}
       />
     </div>
@@ -252,9 +275,11 @@ const RoutinePage = ({ routine }: RoutinePageProps) => {
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const { routine } = context.params
+  const { owner } = context.query
   return {
     props: {
       routine,
+      owner: owner || null,
     },
   }
 }

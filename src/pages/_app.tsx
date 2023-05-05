@@ -14,7 +14,7 @@ import {SpeechProvider} from '@src/context/SpeechProvider'
 import { PlayStatusProvider } from '@src/context/PlayStatus'
 
 let PUBLIC_GOOGLE_API_TOKEN = ''
-axios.get(`http://localhost:4000/v1/key/google`).then((response) => {
+axios.get(`${process.env.NEXT_PUBLIC_API_URL}/v1/key/google`).then((response) => {
   PUBLIC_GOOGLE_API_TOKEN = response.data.key
 }).catch((error) => {
   console.log(error)

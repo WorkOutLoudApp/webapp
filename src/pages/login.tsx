@@ -26,7 +26,7 @@ const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    await axios.post(`http://localhost:4000/v1/user/login`, {
+    await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/v1/user/login`, {
       email,
       password: pass,
     }).then((response) => {
@@ -82,7 +82,7 @@ const Login = () => {
                 onSuccess={async credentialResponse => {
                   const decodedToken = jwt_decode<any>(credentialResponse.credential)
                   
-                  await axios.post(`http://localhost:4000/v1/user/googlelogin`, {
+                  await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/v1/user/googlelogin`, {
                     token: decodedToken,
                   }).then((response) => {
                     if (response.data.success === true) {

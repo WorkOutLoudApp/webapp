@@ -47,7 +47,7 @@ const Register = () => {
     } else if (password !== repeatPassword) {
       setErrMsg('The Repeated Password does not match.')
     } else {
-      await axios.post(`http://localhost:4000/v1/user/register`, {
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/v1/user/register`, {
         firstName,
         lastName,
         username,
@@ -148,7 +148,7 @@ return (
               const decodedToken = jwt_decode<any>(credentialResponse.credential)
               // const decodedToken = jwt_decode<JwtPayload>(credentialResponse.credential)
 
-              await axios.post(`http://localhost:4000/v1/user/googleregister`, {
+              await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/v1/user/googleregister`, {
                 token: decodedToken,
               }).then((response) => {
                 if (response.data.success === true) {

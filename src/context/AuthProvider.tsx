@@ -16,6 +16,7 @@ interface AuthInterface {
     firstName: string
     lastName: string
     avatar: string
+    userId: number
   }
   setUser: React.Dispatch<React.SetStateAction<any>>
   token: String
@@ -25,7 +26,7 @@ interface AuthInterface {
 const AuthContext = createContext({} as AuthInterface)
 
 const verifyToken = async (storedUser: any, setAuth: React.Dispatch<React.SetStateAction<boolean>>, setUser: React.Dispatch<React.SetStateAction<any>>, setToken: React.Dispatch<React.SetStateAction<any>>) => {
-  axios.get(`http://localhost:4000/v1/auth/verifyToken`, {
+  axios.get(`${process.env.NEXT_PUBLIC_API_URL}/v1/auth/verifyToken`, {
     headers: {
       Authorization: `Bearer ${storedUser.token}`,
     }

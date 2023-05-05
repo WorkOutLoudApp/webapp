@@ -1,5 +1,6 @@
-/** @type {import('next').NextConfig} */
 module.exports = {
+  reactStrictMode: true,
+  swcMinify: true,
   eslint: {
     // Warning: This allows production builds to successfully complete even if
     // your project has ESLint errors.
@@ -12,10 +13,7 @@ module.exports = {
     // !! WARN !!
     ignoreBuildErrors: true,
   },
-  output: 'standalone',
-  reactStrictMode: true,
+  reactStrictMode: false,
   swcMinify: true,
-  env: {
-    apiUrl: process.env.NODE_ENV == 'production' || process.env.APP_ENV == 'production' ? 'https://workoutloud.me' : 'http://localhost:3000',
-  },
+  output: "standalone",
 }

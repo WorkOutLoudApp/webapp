@@ -1,5 +1,5 @@
 {
-  "extends": "@shared/tsconfig/nextjs.json",
+  "extends": "./packages/tsconfig/nextjs.json",
   "compilerOptions": {
     "jsx": "preserve",
     "rootDir": "src",
